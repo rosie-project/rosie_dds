@@ -16,9 +16,9 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2]).
 
--include_lib("dds/include/dds_types.hrl").
--include_lib("dds/include/rtps_structure.hrl").
--include_lib("dds/include/rtps_constants.hrl").
+-include_lib("rosie_dds/include/dds_types.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_constants.hrl").
 
 -record(state,
         {rtps_participant_info = #participant{},

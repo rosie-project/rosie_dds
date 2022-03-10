@@ -9,8 +9,8 @@
 %set_built_in_endpoints/2,
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("dds/include/rtps_structure.hrl").
--include_lib("dds/include/rtps_constants.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_constants.hrl").
 
 -record(state,
         {participant = #participant{}, spdp_writer_guid, spdp_reader_guid}).
@@ -45,13 +45,13 @@ send_to_all_readers(Pid, Msg) ->
 on_change_available(Pid, Msg) ->
     gen_server:cast(Pid, {on_change_available, Msg}).
 
-on_change_removed(Pid, ChangeKey) ->
+on_change_removed(_Pid, _ChangeKey) ->
     %ignored
     ok.
 
 %callbacks
 
-init(S) ->
+init(_S) ->
     DomainID = 0,
     GuidPrefix = <<?VendorId_0:8, ?VendorId_1:8, (crypto:strong_rand_bytes(10))/binary>>,
     Participant =
@@ -106,11 +106,11 @@ handle_cast({start_discovery, EndPointSet},
 handle_cast({send_to_all_readers, Msg}, State) ->
     h_send_to_all_readers(Msg),
     {noreply, State};
-handle_cast({on_change_available, _}, #state{spdp_reader_guid = R_GUID, spdp_writer_guid = W_GUID} = State) ->
+handle_cast({on_change_available, _}, #state{spdp_reader_guid = R_GUID, spdp_writer_guid = _W_GUID} = State) ->
     %io:format("P data!\n"),
     CacheContent = rtps_history_cache:get_all_changes({cache_of, R_GUID}),
     LEAVING = [ {WGUID,D} || #cacheChange{writerGuid = WGUID, data = #spdp_disc_part_data{status_qos = S} = D} <- CacheContent, ?ENDPOINT_LEAVING(S)],
-    {LEAVING_GUIDS , LEAVING_DATA} = lists:unzip(LEAVING),
+    {LEAVING_GUIDS , _LEAVING_DATA} = lists:unzip(LEAVING),
     
     [rtps_history_cache:remove_change({cache_of, R_GUID}, {WGUID, SN})
      || #cacheChange{writerGuid = WGUID, sequenceNumber = SN} <- CacheContent,
@@ -130,7 +130,7 @@ handle_cast(_, State) ->
     {noreply, State}.
 
 handle_info(discovery_loop,
-            #state{spdp_reader_guid = R_GUID, spdp_writer_guid = W_GUID} = State) ->
+            #state{spdp_reader_guid = _R_GUID, spdp_writer_guid = W_GUID} = State) ->
     % TRIGGER RESEND
     rtps_writer:unsent_changes_reset(W_GUID),
     erlang:send_after(4000, self(), discovery_loop),
@@ -144,7 +144,7 @@ h_stop_discovery(#state{participant = P, spdp_writer_guid = W_GUID}) ->
     rtps_history_cache:add_change({cache_of, W_GUID}, Change),
     rtps_writer:flush_all_changes(W_GUID).
 
-h_get_discovered_participants(#state{spdp_reader_guid = R_GUID} = State) ->
+h_get_discovered_participants(#state{spdp_reader_guid = R_GUID}) ->
     [D || #cacheChange{data = D} <- rtps_history_cache:get_all_changes({cache_of, R_GUID})].
 
 h_send_to_all_readers(#heartbeat{} = HB) ->

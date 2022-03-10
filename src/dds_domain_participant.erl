@@ -7,8 +7,8 @@
          get_discovered_participants/1]).%,create_publisher/2,create_subscriber/2]).
 -export([init/1, terminate/2, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("dds/include/rtps_structure.hrl").
--include_lib("dds/include/rtps_constants.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_constants.hrl").
 
 -record(state,
         {supervisor,
@@ -84,7 +84,7 @@ handle_cast(_, State) ->
 handle_info(_, State) ->
     {noreply, State}.
 
-terminate(Reason, #state{default_publisher = P, default_subscriber = S}) ->
+terminate(_Reason, #state{default_publisher = P, default_subscriber = S}) ->
     dds_subscriber:dispose_data_readers(S),
     dds_publisher:dispose_data_writers(P),
     rtps_participant:stop_discovery(participant),
@@ -97,7 +97,7 @@ filter_participants_with(PL, BUILTIN_ENDPOINT) ->
         0 /= E band BUILTIN_ENDPOINT].
 
 h_update_participants_list(PL,
-                           #state{default_subscriber = DS, default_publisher = DP} = S) ->
+                           #state{default_subscriber = _DS, default_publisher = _DP} = S) ->
     Sub_Detectors =
         filter_participants_with(PL, ?DISC_BUILTIN_ENDPOINT_SUBSCRIPTIONS_DETECTOR),
     MatchedReaders =

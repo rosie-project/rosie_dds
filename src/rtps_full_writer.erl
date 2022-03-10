@@ -8,8 +8,8 @@
          is_acked_by_all/2, receive_acknack/2, flush_all_changes/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("dds/include/rtps_structure.hrl").
--include_lib("dds/include/rtps_constants.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_constants.hrl").
 
 -define(DEFAULT_WRITE_PERIOD, 1000).
 -define(DEFAULT_HEARTBEAT_PERIOD, 1000).
@@ -177,8 +177,7 @@ send_selected_changes(RequestedKeys,
     rtps_gateway:send(G, {Msg, {L#locator.ip, L#locator.port}}),
 
     % mark all sent requests as "unacknowledged" (skipping the "UNDERWAY" status) just for simplicity
-    NewCR =
-        lists:map(fun(C) ->
+    lists:map(fun(C) ->
                      case lists:member(C#change_for_reader.change_key, RequestedKeys) of
                          true ->
                              C#change_for_reader{status = unacknowledged};
@@ -188,13 +187,13 @@ send_selected_changes(RequestedKeys,
                   end,
                   CR).
 
-send_changes(Filter, Prefix, _, [], Sent) ->
+send_changes(_Filter, _Prefix, _, [], Sent) ->
     Sent;
 send_changes(Filter,
              Prefix,
              HC,
-             [#reader_proxy{guid = #guId{entityId = RID},
-                            unicastLocatorList = [L | _],
+             [#reader_proxy{guid = #guId{entityId = _RID},
+                            unicastLocatorList = [_L | _],
                             changes_for_reader = CR} =
                   P
               | TL],
@@ -226,7 +225,7 @@ write_loop(#state{entity = #endPoint{guid = #guId{prefix = Prefix}},
 h_new_change(D,
              #state{last_sequence_number = Last_SN,
                     entity = E,
-                    history_cache = C} =
+                    history_cache = _C} =
                  S) ->
     SN = Last_SN + 1,
     Change =
@@ -323,14 +322,14 @@ rm_change_from_proxies(Key, [Proxy | TL], NewProxies) ->
     New_PR = Proxy#reader_proxy{changes_for_reader = ChangeList},
     rm_change_from_proxies(Key, TL, [New_PR | NewProxies]).
 
-h_on_change_removed(Key, #state{history_cache = C, reader_proxies = RP} = S) ->
+h_on_change_removed(Key, #state{history_cache = _C, reader_proxies = RP} = S) ->
     S#state{reader_proxies = rm_change_from_proxies(Key, RP)}.
 
 update_for_acknack([], _, _, _, S) ->
     S;
 update_for_acknack([#reader_proxy{ready = IsReady, changes_for_reader = Changes} = Proxy | _],
                    Others,Missed, FinalFlag, S) ->
-    ChangeKeys = [K || #change_for_reader{change_key = K} <- Changes],
+    %ChangeKeys = [K || #change_for_reader{change_key = K} <- Changes],
     NewChangeList =
         lists:map(fun(C) ->
                      {_, SN} = C#change_for_reader.change_key,
@@ -360,18 +359,18 @@ update_for_acknack([#reader_proxy{ready = IsReady, changes_for_reader = Changes}
 h_receive_acknack(_, #state{reader_proxies = []} = S) ->
     S;
 h_receive_acknack(#acknack{readerGUID = RID, final_flag = FF, sn_range = Single},
-                  #state{reader_proxies = RP, history_cache = Cache} = S)
+                  #state{reader_proxies = RP, history_cache = _Cache} = S)
     when is_integer(Single) ->
     Others = [P || #reader_proxy{guid = G} = P <- RP, G /= RID],
     update_for_acknack([P || #reader_proxy{guid = G} = P <- RP, G == RID], Others, [Single], FF, S);
 h_receive_acknack(#acknack{readerGUID = RID, final_flag = FF, sn_range = Range},
-                  #state{reader_proxies = RP, history_cache = Cache} = S) ->
+                  #state{reader_proxies = RP, history_cache = _Cache} = S) ->
     Others = [P || #reader_proxy{guid = G} = P <- RP, G /= RID],
     update_for_acknack([P || #reader_proxy{guid = G} = P <- RP, G == RID], Others, Range, FF, S).
 
 h_flush_all_changes(#state{entity = #endPoint{guid = #guId{prefix = Prefix}},
                            history_cache = HC,
-                           datawrite_period = P,
+                           datawrite_period = _P,
                            reader_proxies = RP}) ->
     send_changes(unsent, Prefix, HC, RP).
 

@@ -1,7 +1,7 @@
 -module(rtps_history_cache).
 
--include_lib("dds/include/dds_types.hrl").
--include_lib("dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/dds_types.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
 
 -behaviour(gen_server).
 

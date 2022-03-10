@@ -11,8 +11,8 @@
          open_multicast_locators/2,stop/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("dds/include/rtps_structure.hrl").
--include_lib("dds/include/rtps_constants.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_constants.hrl").
 
 -record(state,
         {openedSockets = [],
@@ -118,7 +118,7 @@ handle_data({QOS_LIST, Reader, Writer,  WriterSN,  ?PL_CDR_LE, SerializedPayload
     P_list = rtps_messages:parse_param_list(SerializedPayload),
     ParticipantData = pl_to_discovered_participant_data(P_list ++ QOS_LIST),
     {data, {Reader, Writer, WriterSN, ParticipantData}};
-handle_data({QOS_LIST, Reader, Writer, WriterSN}) ->
+handle_data({_QOS_LIST, _Reader, _Writer, _WriterSN}) ->
     io:format("Data msg with only inline_qos not supported by implementaiton... \n"),
     not_managed;
 % Data is user-defined binary in little endian
@@ -171,13 +171,13 @@ process_entity_sub_msg(?SUB_MSG_KIND_HEARTBEAT, {Flags, Body}, S) ->
     handle_heartbeat(S, rtps_messages:parse_heartbeat(Flags, Body));
 process_entity_sub_msg(?SUB_MSG_KIND_GAP, {Flags, Body}, S) ->
     handle_gap(S, rtps_messages:parse_gap(Flags, Body));
-process_entity_sub_msg(?SUB_MSG_KIND_PAD, {Flags, Body}, _) ->
+process_entity_sub_msg(?SUB_MSG_KIND_PAD, {_Flags, _Body}, _) ->
     not_managed;
 process_entity_sub_msg(_, _, _) ->
     not_managed.
 
 send_data_to_reader(State,
-                    {DstEntityID, SrcEntityID, SN, #spdp_disc_part_data{} = Data}) ->
+                    {_DstEntityID, SrcEntityID, SN, #spdp_disc_part_data{} = Data}) ->
     R_GUID =
         #guId{prefix = State#state.destGuidPrefix,
               entityId = ?ENTITYID_SPDP_BUILTIN_PARTICIPANT_READER},
@@ -204,15 +204,15 @@ send_data_to_reader(State, {DstEntityID, SrcEntityID, SN, Data}) ->
 send_gap_to_reader(State, #gap{readerGUID = R_GUID} = GAP) ->
     rtps_full_reader:receive_gap(R_GUID#guId{prefix = State#state.destGuidPrefix}, GAP).
 
-send_acknack_to_writer(State, #acknack{writerGUID = W} = A) ->
+send_acknack_to_writer(_State, #acknack{writerGUID = W} = A) ->
     rtps_full_writer:receive_acknack(W, A).
 
-send_heartbit_to_reader(State,
-                        #heartbeat{readerGUID = #guId{prefix = Prefix, entityId = RID}} = H)
+send_heartbit_to_reader(_State,
+                        #heartbeat{readerGUID = #guId{prefix = _Prefix, entityId = RID}} = H)
     when RID == ?ENTITYID_UNKNOWN ->
     %io:format("should send heartbeat ~p to all readers inside me \n",[H]), ok,
     rtps_participant:send_to_all_readers(participant, H);
-send_heartbit_to_reader(State, #heartbeat{readerGUID = R} = H) ->
+send_heartbit_to_reader(_State, #heartbeat{readerGUID = R} = H) ->
     [P | _] = pg:get_members(R),
     rtps_full_reader:receive_heartbeat(P, H).
 
@@ -290,7 +290,7 @@ stop(Name) ->
     gen_server:call(Pid, stop).
 
 % call backs
-init(State) ->
+init(_State) ->
     P = rtps_participant:get_info(participant),
     ID = {receiver_of, P#participant.guid#guId.prefix},
     pg:join(ID, self()),
@@ -311,8 +311,8 @@ handle_cast({open_unicast_locators, List}, State) ->
 handle_cast({open_multicast_locators, List}, State) ->
     {noreply, open_udp_locators(multicast, List, State)}.
 
-handle_info({udp, Socket, Ip, Port, Packet}, #state{openedSockets = OS} = S) ->
-    IsSocketValid = lists:any(fun({_,Socket,_,_}) -> true; (_) -> false end, OS),
+handle_info({udp, _Socket, Ip, Port, Packet}, #state{openedSockets = OS} = S) ->
+    IsSocketValid = lists:any(fun({_,_,_,_}) -> true; (_) -> false end, OS),
     case IsSocketValid and rtps_messages:is_rtps_packet(Packet) of
         true ->
             analize(S#state.destGuidPrefix, Packet, {Ip, Port});
@@ -358,9 +358,10 @@ h_get_local_locators(#state{openedSockets =
       #locator{kind = ?LOCATOR_KIND_UDPv4,
                ip = I,
                port = P}}
-     || {Type, S, P, I} <- Sockets].
+     || {Type, _S, P, I} <- Sockets].
 
 close_sockets([]) ->
     ok;
 close_sockets([{_, Socket, _, _} | TL]) ->
-    gen_udp:close(Socket).
+    gen_udp:close(Socket),
+    close_sockets(TL).

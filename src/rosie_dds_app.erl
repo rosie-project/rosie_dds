@@ -1,4 +1,4 @@
--module(dds_app).
+-module(rosie_dds_app).
 
 -behaviour(application).
 

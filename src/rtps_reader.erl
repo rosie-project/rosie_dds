@@ -7,7 +7,7 @@
 -export([start_link/2, receive_data/2, get_cache/1]).
 -export([init/1, handle_call/3, handle_cast/2]).
 
--include_lib("dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
 
 -record(state, {participant = #participant{}, entity = #endPoint{}, history_cache}).
 

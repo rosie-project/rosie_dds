@@ -8,7 +8,7 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
 
 -record(state,
         {topic, listener = not_set, rtps_reader, matched_data_writers = [], history_cache}).
@@ -24,9 +24,9 @@ on_change_available(Name, ChangeKey) ->
     [Pid | _] = pg:get_members(Name),
     gen_server:cast(Pid, {on_change_available, ChangeKey}).
 
-on_change_removed(Name, ChangeKey) ->
+on_change_removed(_Name, _ChangeKey) ->
     % DO NOTHING
-    % As a dds_reader we do not notify (for now), the event cming from the cache
+    % As a dds_reader we do not notify (for now), the event coming from the cache
     ok.
 
 set_listener(Name, Listener) ->
@@ -54,7 +54,7 @@ remote_writer_remove(Name, W) ->
     gen_server:cast(Pid, {remote_writer_remove, W}).
 
 %callbacks
-init({Topic, #participant{guid = ID}, GUID}) ->
+init({Topic, #participant{guid = _ID}, GUID}) ->
     %io:format("~p.erl STARTED!\n",[?MODULE]),
     pg:join({data_r_of, GUID}, self()),
     rtps_history_cache:set_listener({cache_of, GUID}, {?MODULE, {data_r_of, GUID}}),
@@ -83,7 +83,7 @@ handle_cast({on_change_available, ChangeKey},
     Module:on_data_available(Name, {{data_r_of, GUID}, ChangeKey}),
     {noreply, S};
 handle_cast({match_remote_writers, Writers},
-            #state{matched_data_writers = DW, rtps_reader = Reader} = S) ->
+            #state{matched_data_writers = _DW, rtps_reader = Reader} = S) ->
     rtps_full_reader:update_matched_writers(Reader, Writers),
     {noreply, S#state{matched_data_writers = [G || #writer_proxy{guid = G} <- Writers]}};
 handle_cast({remote_writer_add, W},

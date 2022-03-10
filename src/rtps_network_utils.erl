@@ -20,6 +20,6 @@ flags_are_ok(Cfg) ->
 get_local_ip() ->
         {ok, Interfaces} = inet:getifaddrs(),
         % getting the first interface that is at least up and running and not for loopback
-        [Opts | _] = [Cfg || {Name, Cfg} <- Interfaces, flags_are_ok(Cfg)],
+        [Opts | _] = [Cfg || {_Name, Cfg} <- Interfaces, flags_are_ok(Cfg)],
         get_ipv4_from_opts(Opts).
     

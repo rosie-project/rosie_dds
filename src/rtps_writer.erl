@@ -8,8 +8,8 @@
          unsent_changes_reset/1, flush_all_changes/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("dds/include/rtps_structure.hrl").
--include_lib("dds/include/rtps_constants.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_constants.hrl").
 
 -record(state,
         {participant = #participant{},
@@ -101,7 +101,7 @@ send_locators_changes(#state{reader_locators = RLs} = S) ->
 
 send_locators_changes(S, [], New_RL) ->
     S#state{reader_locators = New_RL};
-send_locators_changes(#state{participant = P, entity = E} = S,
+send_locators_changes(#state{participant = P, entity = _E} = S,
                       [#reader_locator{locator = L, unsent_changes = Changes} = RL | TL],
                       New_RL) ->
     % prepare ordered datasubmsg in binary and send them
@@ -128,7 +128,7 @@ h_flush_all_changes(S) ->
 h_new_change(D,
              #state{last_sequence_number = Last_SN,
                     entity = E,
-                    history_cache = C} =
+                    history_cache = _C} =
                  S) ->
     SN = Last_SN + 1,
     Change =
@@ -200,5 +200,5 @@ rm_change_from_locators(Key, [RL | TL], NewLocators) ->
     N_RL = RL#reader_locator{unsent_changes = ChangeList},
     rm_change_from_locators(Key, TL, [N_RL | NewLocators]).
 
-h_on_change_removed(Key, #state{history_cache = C, reader_locators = L} = S) ->
+h_on_change_removed(Key, #state{history_cache = _C, reader_locators = L} = S) ->
     S#state{reader_locators = rm_change_from_locators(Key, L)}.

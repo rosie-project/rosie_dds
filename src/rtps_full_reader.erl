@@ -7,7 +7,7 @@
          update_matched_writers/2, receive_data/2,  receive_gap/2, get_cache/1, receive_heartbeat/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
 
 -record(state,
         {participant = #participant{},
@@ -145,8 +145,8 @@ manage_heartbeat_for_writer(#heartbeat{writerGUID = WGUID,
     S#state{writer_proxies = Others ++ [W#writer_proxy{changes_from_writer = Check2}]}.
 
 h_receive_heartbeat(#heartbeat{writerGUID = WGUID,
-                               min_sn = Min,
-                               max_sn = Max} =
+                               min_sn = _Min,
+                               max_sn = _Max} =
                         HB,
                     #state{writer_proxies = Proxies} = S) ->
     case [WP || #writer_proxy{guid = WPG} = WP <- Proxies, WPG == WGUID] of
@@ -202,7 +202,7 @@ send_acknack(WGUID,
     %io:format("Proxies are: ~p\n",[[ P || #writer_proxy{guid=G}=P <- WP, G == WGUID]]),
     [[L | _] | _] =
         [U_List
-         || #writer_proxy{guid = GUID, unicastLocatorList = U_List} = P <- WP, GUID == WGUID],
+         || #writer_proxy{guid = GUID, unicastLocatorList = U_List} <- WP, GUID == WGUID],
     ACKNACK =
         #acknack{writerGUID = WGUID,
                  readerGUID = RGUID,
@@ -233,7 +233,7 @@ add_change_from_writer_if_needed(WGUID, CFW, SN) ->
             CFW ++ [#change_from_writer{change_key = {WGUID, SN}, status = missing}]
     end.
 
-sn_received(#change_from_writer{change_key = {WGUID, SN}, status = S} = C, ReceivedSN)
+sn_received(#change_from_writer{change_key = {_WGUID, SN}, status = _S} = C, ReceivedSN)
     when SN == ReceivedSN ->
     C#change_from_writer{status = received};
 sn_received(C, _) ->
@@ -256,7 +256,7 @@ h_receive_data({Writer, SN, Data},
     end.
 
 h_receive_gap(#gap{writerGUID = Writer, sn_set = SET},
-               #state{history_cache = Cache, writer_proxies = WP} = State) -> 
+               #state{history_cache = _Cache, writer_proxies = WP} = State) -> 
     case [P || #writer_proxy{guid = WGUID} = P <- WP, WGUID == Writer] of
         [] -> 
             State;

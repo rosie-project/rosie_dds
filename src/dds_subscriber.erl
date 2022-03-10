@@ -15,9 +15,9 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("dds/include/dds_types.hrl").
--include_lib("dds/include/rtps_structure.hrl").
--include_lib("dds/include/rtps_constants.hrl").
+-include_lib("rosie_dds/include/dds_types.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_constants.hrl").
 
 -record(state,
         {rtps_participant_info = #participant{},
@@ -157,23 +157,22 @@ handle_call(dispose_data_readers, _, #state{rtps_participant_info = P_info, data
 handle_call(_, _, State) ->
     {reply, ok, State}.
 
-handle_cast({on_data_available, {R, ChangeKey}}, #state{data_readers = DR} = S) ->
-    Change = dds_data_r:read(R, ChangeKey), 
+handle_cast({on_data_available, {DR_id, ChangeKey}}, #state{data_readers = DRs} = S) ->
+    Change = dds_data_r:read(DR_id, ChangeKey), 
     % io:format("DDS: change: ~p, with key: ~p\n", [Change,ChangeKey]),
     Data = Change#cacheChange.data, 
     % io:format("~p\n",[Data#sedp_disc_endpoint_data.status_qos]),
     case ?ENDPOINT_LEAVING(Data#sedp_disc_endpoint_data.status_qos) of
         true ->
-            [dds_data_r:remote_writer_remove(R, Data#sedp_disc_endpoint_data.endpointGuid)
-             || R <- maps:keys(DR)];
+            [dds_data_r:remote_writer_remove(R, Data#sedp_disc_endpoint_data.endpointGuid) || R <- maps:keys(DRs)];
         _ ->
             ToBeMatched =
                 [R
-                 || {R,{_,T}} <- maps:to_list(DR),
+                 || {R,{_,T}} <- maps:to_list(DRs),
                     (T#dds_user_topic.name == Data#sedp_disc_endpoint_data.topic_name) and 
                     (T#dds_user_topic.type_name ==  Data#sedp_disc_endpoint_data.topic_type)],
             %io:format("DDS: discovered publisher of topic: ~p\n", [Data#sedp_disc_endpoint_data.topic_name]),
-            %io:format("DDS: i have theese topics: ~p\n", [[ T || {_,T,_} <- DR]]),
+            %io:format("DDS: i have theese topics: ~p\n", [[ T || {_,T,_} <- DRs]]),
             %io:format("DDS: interested readers are: ~p\n", [ToBeMatched]),
             Participants = rtps_participant:get_discovered_participants(participant),
             [match_reader_with_writer(Pid, Data, Participants) || Pid <- ToBeMatched]

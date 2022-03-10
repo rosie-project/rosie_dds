@@ -8,7 +8,7 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
 
 -record(state, {topic, rtps_writer, history_cache}).
 
@@ -48,7 +48,7 @@ flush_all_changes(Name) ->
     gen_server:call(Pid, flush_all_changes).
 
 %callbacks
-init({Topic, #participant{guid = ID}, GUID}) ->
+init({Topic, #participant{guid = _ID}, GUID}) ->
     %io:format("~p.erl STARTED!\n",[?MODULE]),
     pg:join({data_w_of, GUID}, self()),
     %[P|_] = pg:get_members(ID),
@@ -63,7 +63,7 @@ handle_call(get_matched_subscriptions, _, #state{rtps_writer = W} = S) ->
     {reply, Matched, S};
 handle_call({is_sample_acknowledged, ChangeKey}, _, #state{rtps_writer = W} = S) ->
     {reply, rtps_full_writer:is_acked_by_all(W,ChangeKey), S};
-handle_call(wait_for_acknoledgements, _, #state{rtps_writer = W} = S) ->
+handle_call(wait_for_acknoledgements, _, #state{rtps_writer = _W} = S) ->
     % not implemented
     io:format("DDS_DATA_W: wait_for_acknoledgements Not implemented\n"),
     {reply, ok, S};

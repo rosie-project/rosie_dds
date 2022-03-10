@@ -5,8 +5,8 @@
          parse_data/2, parse_heartbeat/2, parse_acknack/2, parse_gap/2, parse_param_list/1, serialize_data/2,
          serialize_heatbeat/1, serialize_acknack/1]).
 
--include_lib("dds/include/rtps_structure.hrl").
--include_lib("dds/include/rtps_constants.hrl").
+-include_lib("rosie_dds/include/rtps_structure.hrl").
+-include_lib("rosie_dds/include/rtps_constants.hrl").
 
 %% produces an RTPS HEADER
 header(GuidPrefix) ->
@@ -251,7 +251,7 @@ spdp_data_to_param_payload(#spdp_disc_part_data{domainId = D_ID,
                                                 protocolVersion = P_VER,
                                                 guidPrefix = Prefix,
                                                 vendorId = V_ID,
-                                                expectsInlineQos = InlineQoS,
+                                                expectsInlineQos = _InlineQoS,
                                                 default_uni_locator_l = D_UNI_L, % at least 1
                                                 default_multi_locator_l = D_MULTI_L,
                                                 meta_uni_locator_l = M_UNI_L,
@@ -259,8 +259,8 @@ spdp_data_to_param_payload(#spdp_disc_part_data{domainId = D_ID,
                                                 availableBuiltinEndpoints =
                                                     B_IN_MASK, % bitmask 4 byte
                                                 builtinEndpointQos =
-                                                    B_IN_END_QOS, % for best_effort data-reader
-                                                key = Key,
+                                                    _B_IN_END_QOS, % for best_effort data-reader
+                                                key = _Key,
                                                 leaseDuration = LEASE}) ->
     list_to_binary(serialize_param_list([{sentinel, none},
                                          {domain_id, D_ID},
@@ -368,7 +368,7 @@ serialize_acknack_body(#acknack{writerGUID =
                                     #guId{entityId = #entityId{key = WriterID, kind = WriterKind}},
                                 readerGUID =
                                     #guId{entityId = #entityId{key = ReaderID, kind = ReaderKind}},
-                                final_flag = Final,
+                                final_flag = _Final,
                                 sn_range = BitMapBase,
                                 count = Count})
     when is_integer(BitMapBase) ->
@@ -384,7 +384,7 @@ serialize_acknack_body(#acknack{writerGUID =
                                     #guId{entityId = #entityId{key = WriterID, kind = WriterKind}},
                                 readerGUID =
                                     #guId{entityId = #entityId{key = ReaderID, kind = ReaderKind}},
-                                final_flag = Final,
+                                final_flag = _Final,
                                 sn_range = Range,
                                 count = Count}) ->
     BitMapBase = lists:min(Range),
@@ -411,7 +411,7 @@ gen_bitmask(Base, BITMAP_LENGTH, N) ->
     R_Shift = Bit_Index rem 8,
     L_Shift = Bit_Index rem 32 div 8 * 8,
     L_DWORD_shift = 32 * (BITMAP_LENGTH div 32 - Bit_Index div 32 - 1),
-    Bit = 128 bsl L_DWORD_shift bsl L_Shift bsr R_Shift.
+    128 bsl L_DWORD_shift bsl L_Shift bsr R_Shift.
 
 calc_bitmap(Base, NumBits, Range) ->
     BITMAP_LENGTH = 32 * ((NumBits-1) div 32 + 1),
@@ -554,7 +554,7 @@ param_to_record(?PID_RELIABILITY, <<V:32/little, _:64>>) ->
     {reliability_qos, V};
 param_to_record(?PID_HISTORY, <<QOS:32/little, Depth:32/little>>) ->
     {history_qos, {QOS, Depth}};
-param_to_record(?PID_SENTINEL, P) ->
+param_to_record(?PID_SENTINEL, _P) ->
     {sentinel, none};
 param_to_record(_, _) ->
     {unknown, none}.
