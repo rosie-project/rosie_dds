@@ -34,8 +34,8 @@ handle_cast({send, {Datagram, Dst}}, #state{socket = S} = State) ->
     case gen_udp:send(S, Dst, Datagram) of
         ok -> ok;
         {error, Reason} -> 
-                        io:format("[GATEWAY]: failed sending to: ~p\n",[Dst]),
-                        io:format("[GATEWAY]: reason of failure: ~p\n",[Reason])
+                        logger:error("[GATEWAY]: failed sending to: ~p\n",[Dst]),
+                        logger:error("[GATEWAY]: reason of failure: ~p\n",[Reason])
     end,
     {noreply, State};
 handle_cast(_, State) ->

@@ -317,7 +317,7 @@ handle_info({udp, _Socket, Ip, Port, Packet}, #state{openedSockets = OS} = S) ->
         true ->
             analize(S#state.destGuidPrefix, Packet, {Ip, Port});
         false ->
-            io:format("[RTPS_RECEIVER]: Bad packet\n")
+            logger:error("[RTPS_RECEIVER]: Bad packet")
     end,
     {noreply, S}.
 
