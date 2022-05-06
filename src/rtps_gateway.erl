@@ -21,6 +21,7 @@ send(Pid, {Data, Dst}) ->
 init(State) ->
     %io:format("~p.erl STARTED!\n",[?MODULE]),
     pg:join(rtps_gateway, self()),
+    rtps_network_utils:wait_dhcp(5000),
     LocalInterface = rtps_network_utils:get_local_ip(),
     {ok, S} = gen_udp:open(0,[{ip, LocalInterface}, binary, {active, true}]),
     {ok, State#state{socket = S}}.
