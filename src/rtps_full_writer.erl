@@ -18,9 +18,9 @@
 -record(state,
         {participant = #participant{},
          entity = #endPoint{},
-         datawrite_period = ?DEFAULT_WRITE_PERIOD div 10, % default at 1000
-         heatbeat_period = ?DEFAULT_HEARTBEAT_PERIOD div 10, % default at 1000
-         nackResponseDelay = ?DEFAULT_NACK_RESPONCE_DELAY div 10, % default at 200
+         datawrite_period = 50,%?DEFAULT_WRITE_PERIOD div 100, % default at 1000
+         heatbeat_period = 50,%?DEFAULT_HEARTBEAT_PERIOD div 100, % default at 1000
+         nackResponseDelay = 20,%?DEFAULT_NACK_RESPONCE_DELAY div 100, % default at 200
          heatbeat_count = 1,
          nackSuppressionDuration = 0,
          push_mode = true,
