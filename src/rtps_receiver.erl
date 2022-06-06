@@ -342,8 +342,8 @@ open_udp_locators(multicast,
     LocalInterface = rtps_network_utils:get_local_ip(),
     {ok, Socket} =
         gen_udp:open(P,
-                     [{reuseaddr, true},
-                      {ip, IP},
+                     rtps_network_utils:reuseaddr_port_opts() ++
+                      [{ip, IP},
                       binary,
                       {active, true},
                       {add_membership, {IP, LocalInterface}}]),

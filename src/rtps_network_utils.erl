@@ -2,7 +2,8 @@
 
 -export([
     wait_dhcp/1,
-    get_local_ip/0
+    get_local_ip/0,
+    reuseaddr_port_opts/0
 ]).
 
 % API -----------------------------------------------------------------
@@ -18,7 +19,18 @@ wait_dhcp(Millis) ->
 get_local_ip() ->
     get_ip_of_valid_interfaces(no_loopback).
 
+reuseaddr_port_opts() ->
+    reuseaddr_port_opts(os:type()).
+
 % INTERNAL -----------------------------------------------------------------
+%
+reuseaddr_port_opts({unix, darwin}) -> % MacOS
+    % Protocol_level, SO_REUSEPORT, opt value
+    [{raw, 16#ffff, 16#0200, <<1:32/native>>}];
+reuseaddr_port_opts(_) ->
+    % Should be enough on linux
+    % From OTP 25.0+ this flag has effect also on Windows
+    [{reuseaddr, true}].
 
 do_wait_dhcp(Pid) ->
     case get_local_ip() of
