@@ -1,14 +1,21 @@
 -module(dds_data_w).
 
-
--export([start_link/1, write/2, get_matched_subscriptions/1, remote_reader_add/2, is_sample_acknowledged/2,
-         remote_reader_remove/2, match_remote_readers/2, wait_for_acknoledgements/1,
-         flush_all_changes/1]).
+-export([
+    start_link/1,
+    write/2,
+    get_matched_subscriptions/1,
+    remote_reader_add/2,
+    is_sample_acknowledged/2,
+    remote_reader_remove/2,
+    match_remote_readers/2,
+    wait_for_acknoledgements/1,
+    flush_all_changes/1
+]).
 
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("rosie_dds/include/rtps_structure.hrl").
+-include("rtps_structure.hrl").
 
 -record(state, {topic, rtps_writer, history_cache}).
 

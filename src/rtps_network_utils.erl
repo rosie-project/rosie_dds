@@ -71,4 +71,3 @@ get_ip_of_valid_interfaces(CanUseLoopback) ->
         _ when CanUseLoopback == no_loopback -> get_ip_of_valid_interfaces(allow_looback);
         _ -> undefined
     end.
-

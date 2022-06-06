@@ -1,15 +1,25 @@
 % Realiable statefull writer, it manages Reader-proxies sends heatbeats and receives acknacks
 -module(rtps_full_writer).
 
--behaviour(gen_server).
+-export([
+    start_link/1,
+    on_change_available/2,
+    on_change_removed/2, new_change/2,
+    get_matched_readers/1,
+    get_cache/1,
+    update_matched_readers/2,
+    matched_reader_add/2,
+    matched_reader_remove/2,
+    is_acked_by_all/2,
+    receive_acknack/2,
+    flush_all_changes/1
+]).
 
--export([start_link/1, on_change_available/2, on_change_removed/2, new_change/2, get_matched_readers/1,
-         get_cache/1, update_matched_readers/2, matched_reader_add/2, matched_reader_remove/2,
-         is_acked_by_all/2, receive_acknack/2, flush_all_changes/1]).
+-behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("rosie_dds/include/rtps_structure.hrl").
--include_lib("rosie_dds/include/rtps_constants.hrl").
+-include("rtps_structure.hrl").
+-include("rtps_constants.hrl").
 
 -define(DEFAULT_WRITE_PERIOD, 1000).
 -define(DEFAULT_HEARTBEAT_PERIOD, 1000).
@@ -373,4 +383,3 @@ h_flush_all_changes(#state{entity = #endPoint{guid = #guId{prefix = Prefix}},
                            datawrite_period = _P,
                            reader_proxies = RP}) ->
     send_changes(unsent, Prefix, HC, RP).
-

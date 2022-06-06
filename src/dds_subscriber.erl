@@ -1,13 +1,13 @@
 -module(dds_subscriber).
 
-
-
--export([start_link/0, 
-        get_all_data_readers/1, 
-        create_datareader/2, 
-        lookup_datareader/2,
-        delete_datareader/2,
-        dispose_data_readers/1]). %set_subscription_publisher/2,
+-export([
+    start_link/0, 
+    get_all_data_readers/1, 
+    create_datareader/2, 
+    lookup_datareader/2,
+    delete_datareader/2,
+    dispose_data_readers/1
+]). %set_subscription_publisher/2,
 
 -behaviour(gen_data_reader_listener).
 -export([on_data_available/2]).
@@ -15,9 +15,9 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("rosie_dds/include/dds_types.hrl").
--include_lib("rosie_dds/include/rtps_structure.hrl").
--include_lib("rosie_dds/include/rtps_constants.hrl").
+-include("dds_types.hrl").
+-include("rtps_structure.hrl").
+-include("rtps_constants.hrl").
 
 -record(state,
         {rtps_participant_info = #participant{},

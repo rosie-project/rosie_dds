@@ -1,16 +1,26 @@
 % This module contains the participant implementation with SPDPwriter and SDPDreader.
 -module(rtps_participant).
 
--behaviour(gen_server).
-
--export([start_link/0, get_spdp_writer_config/1, get_spdp_reader_config/1,
-         send_to_all_readers/2, get_discovered_participants/1, get_info/1, start_discovery/2,
-         on_change_available/2, on_change_removed/2, stop_discovery/1, stop_receiver/1]).
+-export([
+    start_link/0,
+    get_spdp_writer_config/1,
+    get_spdp_reader_config/1,
+    send_to_all_readers/2,
+    get_discovered_participants/1,
+    get_info/1,
+    start_discovery/2,
+    on_change_available/2,
+    on_change_removed/2,
+    stop_discovery/1,
+    stop_receiver/1
+]).
 %set_built_in_endpoints/2,
+
+-behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("rosie_dds/include/rtps_structure.hrl").
--include_lib("rosie_dds/include/rtps_constants.hrl").
+-include("rtps_structure.hrl").
+-include("rtps_constants.hrl").
 
 -record(state,
         {participant = #participant{}, spdp_writer_guid, spdp_reader_guid}).

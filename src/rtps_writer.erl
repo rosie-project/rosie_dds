@@ -1,15 +1,22 @@
 % Best-effort Stateless RTPS writer, just remembers the reader locators.
 -module(rtps_writer).
+-export([
+    start_link/2,
+    on_change_available/2,
+    on_change_removed/2,
+    new_change/2,
+    update_reader_locator_list/2,
+    reader_locator_add/2,
+    reader_locator_remove/2,
+    unsent_changes_reset/1,
+    flush_all_changes/1
+]).
 
 -behaviour(gen_server).
-
--export([start_link/2, on_change_available/2, on_change_removed/2, new_change/2,
-         update_reader_locator_list/2, reader_locator_add/2, reader_locator_remove/2,
-         unsent_changes_reset/1, flush_all_changes/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("rosie_dds/include/rtps_structure.hrl").
--include_lib("rosie_dds/include/rtps_constants.hrl").
+-include("rtps_structure.hrl").
+-include("rtps_constants.hrl").
 
 -record(state,
         {participant = #participant{},

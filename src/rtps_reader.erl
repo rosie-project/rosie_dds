@@ -1,15 +1,22 @@
 % Best-effort Stateless RTPS reader independent from any writer,
 % it's not paired and is fully passive.
 -module(rtps_reader).
+-export([
+    start_link/2,
+    receive_data/2,
+    get_cache/1
+]).
 
 -behaviour(gen_server).
-
--export([start_link/2, receive_data/2, get_cache/1]).
 -export([init/1, handle_call/3, handle_cast/2]).
 
--include_lib("rosie_dds/include/rtps_structure.hrl").
+-include("rtps_structure.hrl").
 
--record(state, {participant = #participant{}, entity = #endPoint{}, history_cache}).
+-record(state, {
+    participant = #participant{},
+    entity = #endPoint{},
+    history_cache
+}).
 
 %API
 start_link(Participant, ReaderConfig) ->

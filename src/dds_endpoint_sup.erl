@@ -5,8 +5,8 @@
 -export([start_link/1]).
 -export([init/1]).
 
--include_lib("rosie_dds/include/dds_types.hrl").
--include_lib("rosie_dds/include/rtps_structure.hrl").
+-include("dds_types.hrl").
+-include("rtps_structure.hrl").
 
 start_link(Args) ->
     supervisor:start_link(?MODULE, Args).

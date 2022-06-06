@@ -7,8 +7,8 @@
          get_discovered_participants/1]).%,create_publisher/2,create_subscriber/2]).
 -export([init/1, terminate/2, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("rosie_dds/include/rtps_structure.hrl").
--include_lib("rosie_dds/include/rtps_constants.hrl").
+-include("rtps_structure.hrl").
+-include("rtps_constants.hrl").
 
 -record(state,
         {supervisor,

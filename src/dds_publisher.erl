@@ -1,14 +1,16 @@
 -module(dds_publisher).
 
 
--export([start_link/0, 
-        get_all_data_writers/1, 
-        create_datawriter/2, 
-        lookup_datawriter/2,
-        delete_datawriter/2,
-        dispose_data_writers/1, 
-        endpoint_has_been_acknoledged/2]).
-         %wait_for_acknoledgements/1]).%set_publication_subscriber/2,suspend_publications/1,resume_pubblications/1]).
+-export([
+    start_link/0, 
+    get_all_data_writers/1, 
+    create_datawriter/2, 
+    lookup_datawriter/2,
+    delete_datawriter/2,
+    dispose_data_writers/1, 
+    endpoint_has_been_acknoledged/2
+]).
+%wait_for_acknoledgements/1]).%set_publication_subscriber/2,suspend_publications/1,resume_pubblications/1]).
 
 -behaviour(gen_data_reader_listener).
 -export([on_data_available/2]).
@@ -16,9 +18,9 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2]).
 
--include_lib("rosie_dds/include/dds_types.hrl").
--include_lib("rosie_dds/include/rtps_structure.hrl").
--include_lib("rosie_dds/include/rtps_constants.hrl").
+-include("dds_types.hrl").
+-include("rtps_structure.hrl").
+-include("rtps_constants.hrl").
 
 -record(state,
         {rtps_participant_info = #participant{},

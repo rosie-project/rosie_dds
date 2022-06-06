@@ -1,12 +1,26 @@
 -module(rtps_messages).
 
--export([header/1, build_message/2, serialize_sub_header/1, serialize_info_dst/1,
-         serialize_info_timestamp/0, is_rtps_packet/1, parse_rtps_header/1, parse_submsg_header/1,
-         parse_data/2, parse_heartbeat/2, parse_acknack/2, parse_gap/2, parse_param_list/1, serialize_data/2,
-         serialize_heatbeat/1, serialize_acknack/1]).
+-export([
+    header/1,
+    build_message/2,
+    serialize_sub_header/1,
+    serialize_info_dst/1,
+    serialize_info_timestamp/0,
+    is_rtps_packet/1,
+    parse_rtps_header/1,
+    parse_submsg_header/1,
+    parse_data/2,
+    parse_heartbeat/2,
+    parse_acknack/2, 
+    parse_gap/2, 
+    parse_param_list/1, 
+    serialize_data/2,
+    serialize_heatbeat/1, 
+    serialize_acknack/1
+]).
 
--include_lib("rosie_dds/include/rtps_structure.hrl").
--include_lib("rosie_dds/include/rtps_constants.hrl").
+-include("rtps_structure.hrl").
+-include("rtps_constants.hrl").
 
 %% produces an RTPS HEADER
 header(GuidPrefix) ->

@@ -1,20 +1,29 @@
 -module(rtps_history_cache).
 
--include_lib("rosie_dds/include/dds_types.hrl").
--include_lib("rosie_dds/include/rtps_structure.hrl").
+-include("dds_types.hrl").
+-include("rtps_structure.hrl").
+
+-export([
+    start_link/2, 
+    set_listener/2,
+    add_change/2,
+    remove_change/2,
+    get_change/2,
+    get_all_changes/1,
+    get_min_seq_num/1,
+    get_max_seq_num/1
+]).
 
 -behaviour(gen_server).
-
--export([start_link/2, set_listener/2, add_change/2, remove_change/2, get_change/2,
-         get_all_changes/1, get_min_seq_num/1, get_max_seq_num/1]).
 -export([init/1, handle_call/3, handle_cast/2]).
 
 -record(state, {listener, cache = #{}, qos_profile}).
 
+% API
+
 start_link(OwnerGUID, QOS_profile) ->
     gen_server:start_link(?MODULE, {OwnerGUID, QOS_profile}, []).
 
-% API
 set_listener(Name, L) ->
     [Pid | _] = pg:get_members(Name),
     gen_server:cast(Pid, {set_listener, L}).
@@ -22,6 +31,10 @@ set_listener(Name, L) ->
 add_change(Name, Change) ->
     [Pid | _] = pg:get_members(Name),
     gen_server:call(Pid, {add_change, Change}).
+
+remove_change(Name, {WriterGuid, SequenceNumber}) ->
+    [Pid | _] = pg:get_members(Name),
+    gen_server:call(Pid, {remove_change, WriterGuid, SequenceNumber}).
 
 get_change(Name, {WriterGuid, SequenceNumber}) ->
     [Pid | _] = pg:get_members(Name),
@@ -31,10 +44,6 @@ get_all_changes(Name) ->
     [Pid | _] = pg:get_members(Name),
     gen_server:call(Pid, get_all_changes).
 
-remove_change(Name, {WriterGuid, SequenceNumber}) ->
-    [Pid | _] = pg:get_members(Name),
-    gen_server:call(Pid, {remove_change, WriterGuid, SequenceNumber}).
-
 get_max_seq_num(Name) ->
     [Pid | _] = pg:get_members(Name),
     gen_server:call(Pid, get_max_seq_num).
@@ -43,7 +52,7 @@ get_min_seq_num(Name) ->
     [Pid | _] = pg:get_members(Name),
     gen_server:call(Pid, get_min_seq_num).
 
-% CALL_BACKS
+% gen_server callbacks
 init({OwnerGUID, QOS_profile}) ->
     %io:format("~p.erl STARTED!\n",[?MODULE]),
     pg:join({cache_of, OwnerGUID}, self()),
@@ -69,16 +78,6 @@ handle_call(get_all_changes, _, State) ->
 handle_cast({set_listener, L}, State) ->
     {noreply, State#state{listener = L}}.
 
-discard_samples(C, Depth, Listener) ->
-    SequenceNumbers = [ SN || {_,SN} <- maps:keys(C)],
-    MaxSN = case length(SequenceNumbers) > 0 of true -> lists:max(SequenceNumbers); _ -> 0 end,
-    Treshold = MaxSN - Depth,
-    TO_BE_REMOVED = [ KEY || {_,SN} = KEY <- maps:keys(C), SN =< Treshold],
-    case Listener of 
-        {Module, ID} -> [Module:on_change_removed(ID, K) || K <- TO_BE_REMOVED];
-        _ -> ok
-    end,
-    maps:without(TO_BE_REMOVED, C).
 
 %CALL_BACK HELPERS
 h_add_change(#state{cache = C, listener = L, qos_profile = #qos_profile{history = H}} = State, Change) ->
@@ -92,6 +91,17 @@ h_add_change(#state{cache = C, listener = L, qos_profile = #qos_profile{history 
     end,
     State#state{cache = CacheReady#{{Change#cacheChange.writerGuid, Change#cacheChange.sequenceNumber} =>
                            Change }}.
+
+discard_samples(C, Depth, Listener) ->
+    SequenceNumbers = [ SN || {_,SN} <- maps:keys(C)],
+    MaxSN = case length(SequenceNumbers) > 0 of true -> lists:max(SequenceNumbers); _ -> 0 end,
+    Treshold = MaxSN - Depth,
+    TO_BE_REMOVED = [ KEY || {_,SN} = KEY <- maps:keys(C), SN =< Treshold],
+    case Listener of 
+        {Module, ID} -> [Module:on_change_removed(ID, K) || K <- TO_BE_REMOVED];
+        _ -> ok
+    end,
+    maps:without(TO_BE_REMOVED, C).
 
 h_get_change(#state{cache = C}, WriterGuid, SequenceNumber) ->
     case maps:find({WriterGuid, SequenceNumber}, C) of

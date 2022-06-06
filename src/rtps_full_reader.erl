@@ -1,13 +1,21 @@
 % Reliable StateFull RTPS reader with WriterProxies, receives heartbits and sends acknacks
 -module(rtps_full_reader).
 
--behaviour(gen_server).
+-export([
+    start_link/1,
+    matched_writer_add/2,
+    matched_writer_remove/2,
+    update_matched_writers/2,
+    receive_data/2,
+    receive_gap/2,
+    get_cache/1,
+    receive_heartbeat/2
+]).
 
--export([start_link/1, matched_writer_add/2, matched_writer_remove/2,
-         update_matched_writers/2, receive_data/2,  receive_gap/2, get_cache/1, receive_heartbeat/2]).
+-behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
--include_lib("rosie_dds/include/rtps_structure.hrl").
+-include("rtps_structure.hrl").
 
 -record(state,
         {participant = #participant{},

@@ -1,12 +1,14 @@
 % Just a process to hold an UDP socket for sending packets
 -module(rtps_gateway).
+-export([
+    start_link/0,
+    send/2
+]).
 
 -behaviour(gen_server).
-
--export([start_link/0, send/2]).
 -export([init/1, handle_cast/2, handle_call/3]).
 
--include_lib("rosie_dds/include/rtps_structure.hrl").
+-include("rtps_structure.hrl").
 
 -record(state, {participant = #participant{}, socket}).
 
