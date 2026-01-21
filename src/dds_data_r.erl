@@ -31,15 +31,15 @@ start_link(Setup) ->
     gen_server:start_link(?MODULE, Setup, []).
 
 get_topic(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_topic).
 
 get_matched_publications(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_matched_publications).
 
 on_change_available(Name, ChangeKey) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {on_change_available, ChangeKey}).
 
 on_change_removed(_Name, _ChangeKey) ->
@@ -48,35 +48,35 @@ on_change_removed(_Name, _ChangeKey) ->
     ok.
 
 set_listener(Name, Listener) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {set_listener, Listener}).
 
 read(Name, Change) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {read, Change}).
 
 read_all(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, read_all).
 
 match_remote_writers(Name, Writers) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {match_remote_writers, Writers}).
 
 remote_writer_add(Name, W) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {remote_writer_add, W}).
 
 remote_writer_remove(Name, W) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {remote_writer_remove, W}).
 
 %callbacks
 init({Topic, #participant{guid = _ID}, GUID}) ->
-    %io:format("~p.erl STARTED!\n",[?MODULE]),
+    %io:format("dds_data_r for topic ~p STARTED!\n",[Topic]),
     pg:join({data_r_of, GUID}, self()),
     rtps_history_cache:set_listener({cache_of, GUID}, {?MODULE, {data_r_of, GUID}}),
-    % [P|_] = pg:get_members(ID),
+    % [P|_] = pg:get_local_members(ID),
     % R = rtps_participant:create_full_reader(P,ReaderConfig,Cache),
     {ok,
      #state{topic = Topic,

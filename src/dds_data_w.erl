@@ -26,46 +26,46 @@ start_link(Setup) ->
     gen_server:start_link(?MODULE, Setup, []).
 
 get_topic(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, ?FUNCTION_NAME).
 
 get_matched_subscriptions(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_matched_subscriptions).
 
 match_remote_readers(Name, R) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {match_remote_readers, R}).
 
 remote_reader_add(Name, R) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {remote_reader_add, R}).
 
 remote_reader_remove(Name, R) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {remote_reader_remove, R}).
 
 write(Name, MSG) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {write, MSG}).
 
 is_sample_acknowledged(Name, ChangeKey) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {is_sample_acknowledged, ChangeKey}).
 
 wait_for_acknoledgements(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, wait_for_acknoledgements).
 
 flush_all_changes(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, flush_all_changes).
 
 %callbacks
 init({Topic, #participant{guid = _ID}, GUID}) ->
-    %io:format("~p.erl STARTED!\n",[?MODULE]),
+    %io:format("dds_data_w for topic ~p STARTED!\n",[Topic]),
     pg:join({data_w_of, GUID}, self()),
-    %[P|_] = pg:get_members(ID),
+    %[P|_] = pg:get_local_members(ID),
     %W = rtps_participant:create_full_writer(P, WriterConfig, Cache),% rtps_full_writer:create({P, WriterConfig, Cache}),
     {ok,
      #state{topic = Topic,

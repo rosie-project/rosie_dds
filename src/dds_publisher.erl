@@ -34,35 +34,35 @@ start_link() ->
     gen_server:start_link(?MODULE, [], []).
 
 on_data_available(Name, {R, ChangeKey}) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {on_data_available, {R, ChangeKey}}).
 
 create_datawriter(Name, Topic) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {create_datawriter, Topic}).
 
 lookup_datawriter(Name, Topic) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {lookup_datawriter, Topic}).
 
 delete_datawriter(Name, WriterName) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {delete_datawriter, WriterName}).
 
 get_all_data_writers(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_all_data_writers).
 
 dispose_data_writers(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, dispose_data_writers).
 
 endpoint_has_been_acknoledged(Name, Endpoint) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {endpoint_has_been_acknoledged,Endpoint}).
 
 % wait_for_acknoledgements(Name) ->
-%     [Pid | _] = pg:get_members(Name),
+%     [Pid | _] = pg:get_local_members(Name),
 %     gen_server:call(Pid, wait_for_acknoledgements).
 
 %callbacks

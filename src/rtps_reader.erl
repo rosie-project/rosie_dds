@@ -26,11 +26,11 @@ start_link(Participant, ReaderConfig) ->
                           []).
 
 get_cache(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_cache).
 
 receive_data(Name, Data) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {receive_data, Data}).
 
 % callbacks

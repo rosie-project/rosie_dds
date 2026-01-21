@@ -31,36 +31,36 @@ start_link(Participant, WriterConfig) ->
     gen_server:start_link(?MODULE, {Participant, WriterConfig}, []).
 
 new_change(Name, Data) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {new_change, Data}).
 
 on_change_available(Name, ChangeKey) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {on_change_available, ChangeKey}).
 
 on_change_removed(Name, ChangeKey) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {on_change_removed, ChangeKey}).
 
 %Adds new locators if missing, removes old locators not specified in the call.
 update_reader_locator_list(Name, RL) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {update_reader_locator_list, RL}).
 
 reader_locator_add(Name, Locator) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {reader_locator_add, Locator}).
 
 reader_locator_remove(Name, Locator) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {reader_locator_remove, Locator}).
 
 unsent_changes_reset(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, unsent_changes_reset).
 
 flush_all_changes(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, flush_all_changes).
 
 % callbacks

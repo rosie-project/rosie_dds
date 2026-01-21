@@ -35,35 +35,35 @@ start_link({Participant, ReaderConfig}) ->
     gen_server:start_link(?MODULE, State, []).
 
 get_cache(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_cache).
 
 receive_heartbeat(Pid, HB) when is_pid(Pid) ->
     gen_server:cast(Pid, {receive_heartbeat, HB});
 receive_heartbeat(Name, HB) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {receive_heartbeat, HB}).
 
 update_matched_writers(Name, Proxies) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {update_matched_writers, Proxies}).
 
 matched_writer_add(Name, W) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {matched_writer_add, W}).
 
 matched_writer_remove(Name, W) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {matched_writer_remove, W}).
 
 receive_data(Pid, Data) when is_pid(Pid) ->
     gen_server:cast(Pid, {receive_data, Data});
 receive_data(Name, Data) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {receive_data, Data}).
 
 receive_gap(Name, Gap) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {receive_gap, Gap}).
 
 % callbacks

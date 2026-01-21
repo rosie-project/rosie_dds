@@ -37,23 +37,23 @@ start_link() ->
     gen_server:start_link(?MODULE, #state{}, []).
 
 get_local_locators(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_local_locators).
 
 open_unicast_locators(Name, LocatorList) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {open_unicast_locators, LocatorList}).
 
 open_multicast_locators(Name, LocatorList) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {open_multicast_locators, LocatorList}).
 
 receive_packet(Name, Packet) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {receive_packet, Packet}).
 
 stop(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, stop).
 
 % gen_server callbacks
@@ -101,7 +101,6 @@ handle_info({udp, _Socket, Ip, Port, Packet}, #state{openedSockets = OS} = S) ->
 
 analize(GuidPrefix, Packet, {Ip, Port}) ->
     {Version, Vendor, SourceGuidPrefix, PayLoad} = rtps_messages:parse_rtps_header(Packet),
-    %io:format("Receiver parsing packet: guid_prefix = ~p\n",[SourceGuidPrefix]),
     State =
         #state{sourceVersion = Version,
                sourceVendorId = Vendor,% unknown vendor
@@ -198,7 +197,7 @@ send_heartbit_to_reader(_State,
     %io:format("should send heartbeat ~p to all readers inside me \n",[H]), ok,
     rtps_participant:send_to_all_readers(participant, H);
 send_heartbit_to_reader(_State, #heartbeat{readerGUID = R} = H) ->
-    [P | _] = pg:get_members(R),
+    [P | _] = pg:get_local_members(R),
     rtps_full_reader:receive_heartbeat(P, H).
 
 send_heartbit_frag_to_reader(_State,
@@ -207,7 +206,7 @@ send_heartbit_frag_to_reader(_State,
     %io:format("should send heartbeat frag ~p to all readers inside me \n",[H]), ok,
     rtps_participant:send_to_all_readers(participant, H);
 send_heartbit_frag_to_reader(_State, #heartbeat_frag{readerGUID = R} = H) ->
-    [P | _] = pg:get_members(R),
+    [P | _] = pg:get_local_members(R),
     rtps_full_reader:receive_heartbeat(P, H).
 
 open_udp_locators(_, [], S) ->

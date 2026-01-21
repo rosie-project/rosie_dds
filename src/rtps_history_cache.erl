@@ -40,39 +40,39 @@ start_link(OwnerGUID, QOS_profile) ->
     gen_server:start_link(?MODULE, {OwnerGUID, QOS_profile}, []).
 
 set_listener(Name, L) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {set_listener, L}).
 
 add_change(Name, Change) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {add_change, Change}).
 
 add_fragments(Name, ChangeKey, Fragments) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {add_fragments, ChangeKey, Fragments}).
 
 fragmented_change(Name, ChangeKey, Fragments) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {fragmented_change, ChangeKey, Fragments}).
 
 remove_change(Name, {WriterGuid, SequenceNumber}) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {remove_change, WriterGuid, SequenceNumber}).
 
 get_change(Name, {WriterGuid, SequenceNumber}) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {get_change, WriterGuid, SequenceNumber}).
 
 get_all_changes(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_all_changes).
 
 get_max_seq_num(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_max_seq_num).
 
 get_min_seq_num(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_min_seq_num).
 
 % gen_server callbacks

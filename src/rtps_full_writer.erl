@@ -52,52 +52,52 @@ start_link({Participant, WriterConfig}) ->
     gen_server:start_link(?MODULE, {Participant, WriterConfig}, []).
 
 new_change(Name, Data) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {new_change, Data}).
 
 on_change_available(Name, ChangeKey) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {on_change_available, ChangeKey}).
 
 on_change_removed(Name, ChangeKey) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {on_change_removed, ChangeKey}).
 
 %Adds new locators if missing, removes old locators not specified in the call.
 update_matched_readers(Name, R) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {update_matched_readers, R}).
 
 get_matched_readers(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_matched_readers).
 
 matched_reader_add(Name, R) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {matched_reader_add, R}).
 
 matched_reader_remove(Name, R) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {matched_reader_remove, R}).
 
 is_acked_by_all(Name,ChangeKey) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, {is_acked_by_all,ChangeKey}).
 
 receive_acknack(Name, Acknack) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {receive_acknack, Acknack}).
 
 receive_nackfrag(Name, NackFrag) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:cast(Pid, {receive_nackfrag, NackFrag}).
 
 get_cache(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, get_cache).
 
 flush_all_changes(Name) ->
-    [Pid | _] = pg:get_members(Name),
+    [Pid | _] = pg:get_local_members(Name),
     gen_server:call(Pid, flush_all_changes).
 
 % callbacks
@@ -399,6 +399,7 @@ h_matched_reader_add({ReaderGUID, Proxy},
                             history_cache = C,
                             heatbeat_count = Count} =
                          S) ->
+    io:format("matched_reader_add: ~p~n", [ReaderGUID]),
     Changes = rtps_history_cache:get_all_changes(C),
     NewProxy = setup_reader_proxy(Changes, Proxy),
     HB = build_heartbeat(GUID, C, Count),
